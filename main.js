@@ -1,5 +1,6 @@
 var board = new Array();
 var score = 0;
+var hasconflict = new Array();
 
 $(document).ready(function(){
 	newgame();
@@ -22,11 +23,18 @@ function init(){
 		}
 	for(var i=0; i<4; i++){
 		board[i] = new Array();
-		for(var j=0; j<4; j++)
+		hasconflict[i] = new Array();
+
+		for(var j=0; j<4; j++){
 			board[i][j] = 0;
+			hasconflict[i][j] = false;
+		}
+			
 	}
 
-	updateBoardView()
+	updateBoardView();
+
+	score = 0;
 }
 
 function updateBoardView(){
@@ -51,6 +59,8 @@ function updateBoardView(){
 				theNumberCell.css("color", getNumberColor(board[i][j]));
 				theNumberCell.text(board[i][j]);
 			}
+
+			hasconflict[i][j] = false;
 		}
 
 }
@@ -71,7 +81,7 @@ function generateOneNumber(){
 		var randy = parseInt(Math.floor((Math.random() * 4)));
 	}
 
-	//randomly choose a number
+	//randomly choose a number 2/4
 	var randNumber = Math.random() < 0.5 ? 2 : 4;
 
 	//show the number on board
@@ -86,26 +96,26 @@ $(document).keydown(function(event){
 	switch(event.keyCode){
 		case 37: //left
 			if (moveLeft()){
-				generateOneNumber();
-				isgameover();
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300);
 			}
 			break;
 		case 38: //up
 			if (moveUp()){
-				generateOneNumber();
-				isgameover();
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300);
 			}
 			break;
 		case 39: //right
 			if (moveRight()){
-				generateOneNumber();
-				isgameover();
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300);
 			}
 			break;
 		case 40: //down
 			if (moveDown()){
-				generateOneNumber();
-				isgameover();
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300);
 			}
 			break;
 		default:
@@ -115,7 +125,13 @@ $(document).keydown(function(event){
 
 
 function isgameover(){
+	if (nospace(board) && nomoveavailable(board)){
+		gameover();
+	}
+}
 
+function gameover(){
+	alert("game over!");
 }
 
 
@@ -136,12 +152,16 @@ function moveLeft(){
 						board[i][j] = 0;
 						break;
 					}
-					else if(board[i][k] == board[i][j] && noBlockHorizontal(i, k, j, board)){
+					else if(board[i][k] == board[i][j] && noBlockHorizontal(i, k, j, board) && !hasconflict[i][k]){
 						//move
 						showMoveAnimation(i, j, i, k);
 						//add
 						board[i][k] += board[i][j];
 						board[i][j] = 0;
+						// add score
+						score += board[i][k];
+						updateScore(score);
+						hasconflict[i][k] = true;
 						break;
 					}
 				}
@@ -170,12 +190,15 @@ function moveRight(){
 						board[i][j] = 0;
 						break;
 					}
-					else if(board[i][k] == board[i][j] && noBlockHorizontal(i, j, k, board)){
+					else if(board[i][k] == board[i][j] && noBlockHorizontal(i, j, k, board) && !hasconflict[i][k]){
 						//move
 						showMoveAnimation(i, j, i, k);
 						//add
 						board[i][k] += board[i][j];
 						board[i][j] = 0;
+						score += board[i][k];
+						updateScore(score);
+						hasconflict[i][k] = true;
 						break;
 					}
 				}
@@ -204,12 +227,15 @@ function moveUp(){
 						board[i][j] = 0;
 						break;
 					}
-					else if(board[k][j] == board[i][j] && noBlockVertical(j, k, i, board)){
+					else if(board[k][j] == board[i][j] && noBlockVertical(j, k, i, board) && !hasconflict[i][k]){
 						//move
 						showMoveAnimation(i, j, k, j);
 						//add
 						board[k][j] += board[i][j];
 						board[i][j] = 0;
+						score += board[i][k];
+						updateScore(score);
+						hasconflict[i][k] = true;
 						break;
 					}
 				}
@@ -238,12 +264,15 @@ function moveDown(){
 						board[i][j] = 0;
 						break;
 					}
-					else if(board[k][j] == board[i][j] && noBlockVertical(j, i, k, board)){
+					else if(board[k][j] == board[i][j] && noBlockVertical(j, i, k, board) && !hasconflict[i][k]){
 						//move
 						showMoveAnimation(i, j, k, j);
 						//add
 						board[k][j] += board[i][j];
 						board[i][j] = 0;
+						score += board[i][k];
+						updateScore(score);
+						hasconflict[i][k] = true;
 						break;
 					}
 				}
@@ -252,4 +281,8 @@ function moveDown(){
 
 	updateBoardView();	
 	return true;
+}
+
+function updateScore(score){
+	$("#score").text(score);
 }
